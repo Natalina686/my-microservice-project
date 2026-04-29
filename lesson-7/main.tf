@@ -23,6 +23,6 @@ module "eks" {
   source = "./modules/eks"
 
   cluster_name = "lesson-7-cluster"
-  subnet_ids   = module.vpc.public_subnets
+  subnet_ids   = module.vpc.private_subnets
   vpc_id       = module.vpc.vpc_id
 }
