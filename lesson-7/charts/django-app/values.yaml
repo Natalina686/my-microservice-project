@@ -1,5 +1,0 @@
-image:
-  repository: 683966916235.dkr.ecr.us-west-2.amazonaws.com/django-app
-  tag: latest
-
-replicaCount: 2

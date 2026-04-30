@@ -36,3 +36,21 @@ Image stored in Amazon ECR
 Application deployed via Helm chart
 LoadBalancer Service exposes application externally
 HPA scales pods based on CPU usage
+
+
+# Lesson 8-9
+
+# Terraform
+terraform init
+terraform apply
+# Jenkins
+відкрити LoadBalancer URL
+створити pipeline
+запустити build
+# Argo CD
+kubectl port-forward svc/argo-cd-server -n argocd 8080:443
+
+# Login → перевірити:
+
+Application = Synced
+Pods = Running
