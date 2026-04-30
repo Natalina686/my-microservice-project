@@ -50,6 +50,7 @@ spec:
   }
 }
 
+
     stage('Verify Kaniko') {
       steps {
         container('kaniko') {
