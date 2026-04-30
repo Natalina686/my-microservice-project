@@ -9,4 +9,15 @@ resource "helm_release" "jenkins" {
   wait    = true
 
   values = [file("${path.module}/values.yaml")]
+
+  set_sensitive {
+    name  = "controller.admin.password"
+    value = var.jenkins_admin_password
+  }
+}
+
+variable "jenkins_admin_password" {
+  description = "Jenkins admin password"
+  type        = string
+  sensitive   = true
 }
