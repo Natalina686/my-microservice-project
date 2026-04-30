@@ -1,0 +1,8 @@
+controller:
+  serviceType: LoadBalancer
+
+agent:
+  enabled: true
+
+persistence:
+  enabled: false

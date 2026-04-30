@@ -1,0 +1,108 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  serviceAccountName: jenkins
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:latest
+    command:
+    - /busybox/cat
+    tty: true
+    volumeMounts:
+    - name: docker-config
+      mountPath: /kaniko/.docker
+
+  volumes:
+  - name: docker-config
+    secret:
+      secretName: ecr-secret
+"""
+    }
+  }
+
+  environment {
+    AWS_REGION = "eu-central-1"
+    ECR_REPO   = "683966916235.dkr.ecr.eu-central-1.amazonaws.com/django-app"
+    IMAGE_TAG  = "${BUILD_NUMBER}"
+    HELM_REPO  = "https://github.com/Natalina686/my-microservice-project.git"
+    GIT_BRANCH = "main"
+  }
+
+  options {
+    timestamps()
+    disableConcurrentBuilds()
+    skipDefaultCheckout(true)
+  }
+
+  stages {
+
+    stage('Checkout App') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build & Push Image (Kaniko)') {
+      steps {
+        container('kaniko') {
+          sh """
+            /kaniko/executor \
+              --context $WORKSPACE \
+              --dockerfile $WORKSPACE/Dockerfile \
+              --destination=$ECR_REPO:$IMAGE_TAG \
+              --cache=true \
+              --cleanup \
+              --skip-tls-verify
+          """
+        }
+      }
+    }
+
+    stage('Clone Helm Repo') {
+      steps {
+        sh """
+          rm -rf helm-repo
+          git clone $HELM_REPO helm-repo
+        """
+      }
+    }
+
+    stage('Update Helm values') {
+      steps {
+        sh """
+          cd helm-repo
+
+          sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" charts/django-app/values.yaml
+
+          git config user.email "jenkins@ci.local"
+          git config user.name "jenkins"
+
+          git add charts/django-app/values.yaml
+
+          git diff --cached --quiet && echo "No changes" && exit 0
+
+          git commit -m "ci: update image tag to ${IMAGE_TAG}"
+          git push origin $GIT_BRANCH
+        """
+      }
+    }
+  }
+
+  post {
+    success {
+      echo "CI/CD SUCCESS: image pushed + Helm updated + GitOps triggered"
+    }
+
+    failure {
+      echo "CI/CD FAILED: check Kaniko / ECR / Git permissions"
+    }
+
+    always {
+      cleanWs()
+    }
+  }
+}
