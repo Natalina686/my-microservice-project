@@ -45,8 +45,7 @@ spec:
 
     stage('Checkout App') {
   steps {
-    git branch: 'main',
-        url: 'https://github.com/Natalina686/my-microservice-project.git'
+    checkout scm
   }
 }
 
