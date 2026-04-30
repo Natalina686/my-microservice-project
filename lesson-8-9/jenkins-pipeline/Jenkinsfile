@@ -6,20 +6,25 @@ apiVersion: v1
 kind: Pod
 spec:
   serviceAccountName: jenkins
+
   containers:
   - name: kaniko
-    image: gcr.io/kaniko-project/executor:latest
-    command:
-    - /busybox/cat
+    image: gcr.io/kaniko-project/executor:v1.23.2-debug
+    command: ["sleep"]
+    args: ["3600"]
     tty: true
+
     volumeMounts:
     - name: docker-config
-      mountPath: /kaniko/.docker
+      mountPath: /kaniko/.docker/
 
   volumes:
   - name: docker-config
     secret:
       secretName: ecr-secret
+      items:
+      - key: .dockerconfigjson
+        path: config.json
 """
     }
   }
@@ -33,34 +38,50 @@ spec:
   }
 
   options {
-    timestamps()
     disableConcurrentBuilds()
-    skipDefaultCheckout(true)
   }
 
   stages {
 
     stage('Checkout App') {
-      steps {
-        checkout scm
-      }
-    }
+  steps {
+    git branch: 'main',
+        url: 'https://github.com/Natalina686/my-microservice-project.git'
+  }
+}
 
-    stage('Build & Push Image (Kaniko)') {
+
+    stage('Verify Kaniko') {
       steps {
         container('kaniko') {
-          sh """
-            /kaniko/executor \
-              --context $WORKSPACE \
-              --dockerfile $WORKSPACE/Dockerfile \
-              --destination=$ECR_REPO:$IMAGE_TAG \
-              --cache=true \
-              --cleanup \
-              --skip-tls-verify
-          """
+          sh '''
+            /kaniko/executor --help | head -n 5
+          '''
         }
       }
     }
+
+    stage('Build & Push Image to ECR') {
+  steps {
+    container('kaniko') {
+      sh '''
+        set -e
+
+        CONTEXT=$WORKSPACE/django-docker-project/app
+
+        ls -la $CONTEXT
+
+        /kaniko/executor \
+          --context=$CONTEXT \
+          --dockerfile=$CONTEXT/Dockerfile \
+          --destination=$ECR_REPO:$IMAGE_TAG \
+          --cache=true \
+          --cleanup \
+          --use-new-run
+      '''
+    }
+  }
+}
 
     stage('Clone Helm Repo') {
       steps {
@@ -85,7 +106,7 @@ spec:
 
           git diff --cached --quiet && echo "No changes" && exit 0
 
-          git commit -m "ci: update image tag to ${IMAGE_TAG}"
+          git commit -m "ci: update image tag ${IMAGE_TAG}"
           git push origin $GIT_BRANCH
         """
       }
@@ -94,15 +115,11 @@ spec:
 
   post {
     success {
-      echo "CI/CD SUCCESS: image pushed + Helm updated + GitOps triggered"
+      echo "SUCCESS: Image built + pushed to ECR + Helm updated"
     }
 
     failure {
-      echo "CI/CD FAILED: check Kaniko / ECR / Git permissions"
-    }
-
-    always {
-      cleanWs()
+      echo "FAILED: check Kaniko / ECR / permissions"
     }
   }
 }
