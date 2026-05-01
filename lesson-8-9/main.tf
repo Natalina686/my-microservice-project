@@ -42,3 +42,21 @@ module "argo_cd" {
 
   depends_on = [module.eks]
 }
+
+module "rds" {
+  source = "./modules/rds"
+
+  use_aurora = false
+
+  db_name  = "appdb"
+  username = "postgres"
+  password = "postgres123"
+
+  engine          = "postgres"
+  engine_version  = "15"
+  instance_class  = "db.t3.micro"
+  multi_az        = false
+
+  subnet_ids = module.vpc.private_subnets
+  vpc_id     = module.vpc.vpc_id
+}

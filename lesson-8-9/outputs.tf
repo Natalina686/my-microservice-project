@@ -13,3 +13,7 @@ output "vpc_id" {
 output "ecr_url" {
   value = module.ecr.repository_url
 }
+
+output "rds_endpoint" {
+  value = module.rds.db_endpoint
+}
