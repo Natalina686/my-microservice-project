@@ -50,7 +50,7 @@ module "rds" {
 
   db_name  = "appdb"
   username = "postgres"
-  password = "postgres123"
+  password = var.db_password
 
   engine          = "postgres"
   engine_version  = "15"

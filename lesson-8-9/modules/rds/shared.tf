@@ -17,7 +17,29 @@ resource "aws_security_group" "this" {
 
 resource "aws_db_parameter_group" "this" {
   name   = "rds-params"
-  family = "postgres15"
+  family = var.parameter_group_family
+
+  parameter {
+    name  = "max_connections"
+    value = "100"
+  }
+
+  parameter {
+    name  = "log_statement"
+    value = "all"
+  }
+
+  parameter {
+    name  = "work_mem"
+    value = "4096"
+  }
+}
+
+resource "aws_rds_cluster_parameter_group" "aurora" {
+  count = var.use_aurora ? 1 : 0
+
+  name   = "aurora-params"
+  family = "aurora-postgresql15"
 
   parameter {
     name  = "max_connections"

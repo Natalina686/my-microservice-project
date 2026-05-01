@@ -6,3 +6,5 @@ __pycache__/
 .terraform/
 *.log
 .DS_Store
+terraform.tfvars
+*.tfvars

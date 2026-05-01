@@ -45,3 +45,13 @@ variable "subnet_ids" {
 variable "vpc_id" {
   type = string
 }
+
+variable "db_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "parameter_group_family" {
+  type    = string
+  default = "postgres15"
+}
