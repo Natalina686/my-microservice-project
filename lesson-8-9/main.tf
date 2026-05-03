@@ -32,8 +32,9 @@ module "eks" {
 module "jenkins" {
   source    = "./modules/jenkins"
   namespace = "jenkins"
-
+  jenkins_admin_password = var.jenkins_admin_password
   depends_on = [module.eks]
+  
 }
 
 module "argo_cd" {
@@ -49,13 +50,13 @@ module "rds" {
   use_aurora = false
 
   db_name  = "appdb"
-  username = "postgres"
-  password = var.db_password
+  username  = "postgres"
+  db_password = var.db_password
 
-  engine          = "postgres"
-  engine_version  = "15"
-  instance_class  = "db.t3.micro"
-  multi_az        = false
+  engine         = "postgres"
+  engine_version = "15"
+  instance_class = "db.t3.micro"
+  multi_az       = false
 
   subnet_ids = module.vpc.private_subnets
   vpc_id     = module.vpc.vpc_id
