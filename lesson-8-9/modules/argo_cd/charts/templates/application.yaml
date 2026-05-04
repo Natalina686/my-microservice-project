@@ -5,6 +5,9 @@ metadata:
   namespace: argocd
 
 spec:
+  project: default
+  revisionHistoryLimit: 2
+
   source:
     repoURL: https://github.com/Natalina686/my-microservice-project.git
     path: charts/django-app
@@ -12,7 +15,7 @@ spec:
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: django
 
   syncPolicy:
     automated:

@@ -6,15 +6,15 @@ terraform {
     }
   }
 
-   backend "s3" {
-     bucket         = "nata-lesson5-tfstate-683966916235"
-     key            = "lesson-5/terraform.tfstate"
-     region         = "us-west-2"
-     dynamodb_table = "terraform-locks"
-     encrypt        = true
-   }
+   # backend "s3" {
+  #   bucket         = "nata-lesson8-tfstate-683966916235"
+  #   key            = "lesson-8-9/terraform.tfstate"
+  #   region         = "eu-central-1"
+  #   dynamodb_table = "terraform-locks"
+  #   encrypt        = true
+  # }
 }
 
 provider "aws" {
-  region = "us-west-2"
+  region = "eu-central-1"
 }

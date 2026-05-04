@@ -11,3 +11,14 @@ resource "helm_release" "argocd" {
     file("${path.module}/values.yaml")
   ]
 }
+
+resource "helm_release" "argocd_apps" {
+  name      = "argocd-apps"
+  namespace = var.namespace
+
+  chart = "${path.module}/charts"
+
+  depends_on = [
+    helm_release.argocd
+  ]
+}
